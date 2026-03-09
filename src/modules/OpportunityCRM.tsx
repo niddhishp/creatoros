@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useStore } from '@/store';
+import { useCreatorOSStore } from '@/store';
+import type { Opportunity, Contact, OpportunityType } from '@/types';
 import { 
   Briefcase, 
   Plus, 
@@ -30,22 +31,22 @@ const opportunityTypes = [
 ];
 
 export function OpportunityCRM() {
-  const { opportunities, contacts } = useStore();
+  const { opportunities, contacts } = useCreatorOSStore();
   const [selectedStage, setSelectedStage] = useState('all');
   const [selectedOpportunity, setSelectedOpportunity] = useState<string | null>(null);
   const [showNewModal, setShowNewModal] = useState(false);
 
-  const filteredOpportunities = opportunities.filter(opp => {
+  const filteredOpportunities = opportunities.filter((opp: Opportunity) => {
     return selectedStage === 'all' || opp.status === selectedStage;
   });
 
   const totalValue = opportunities
-    .filter(o => o.status !== 'closed_lost')
-    .reduce((sum, o) => sum + (o.estimated_value || 0), 0);
+    .filter((o: Opportunity) => o.status !== 'closed_lost')
+    .reduce((sum: number, o: Opportunity) => sum + (o.estimated_value || 0), 0);
 
   const weightedValue = opportunities
-    .filter(o => o.status !== 'closed_lost')
-    .reduce((sum, o) => sum + ((o.estimated_value || 0) * (o.probability / 100)), 0);
+    .filter((o: Opportunity) => o.status !== 'closed_lost')
+    .reduce((sum: number, o: Opportunity) => sum + ((o.estimated_value || 0) * (o.probability / 100)), 0);
 
   return (
     <div className="space-y-6">
@@ -68,7 +69,7 @@ export function OpportunityCRM() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatBox label="Total Pipeline" value={`₹${(totalValue / 100000).toFixed(1)}L`} color="indigo" />
         <StatBox label="Weighted Value" value={`₹${(weightedValue / 100000).toFixed(1)}L`} color="green" />
-        <StatBox label="Active Opportunities" value={opportunities.filter(o => o.status !== 'closed_won' && o.status !== 'closed_lost').length} color="blue" />
+        <StatBox label="Active Opportunities" value={opportunities.filter((o: Opportunity) => o.status !== 'closed_won' && o.status !== 'closed_lost').length} color="blue" />
         <StatBox label="Win Rate" value="60%" color="amber" />
       </div>
 
@@ -95,11 +96,11 @@ export function OpportunityCRM() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredOpportunities.map((opp) => (
+          {filteredOpportunities.map((opp: Opportunity) => (
             <OpportunityCard 
               key={opp.id} 
               opportunity={opp}
-              contact={contacts.find(c => c.id === opp.contact_id)}
+              contact={contacts.find((c: Contact) => c.id === opp.contact_id)}
               isSelected={selectedOpportunity === opp.id}
               onClick={() => setSelectedOpportunity(selectedOpportunity === opp.id ? null : opp.id)}
             />
@@ -143,8 +144,8 @@ function OpportunityCard({
   isSelected, 
   onClick 
 }: { 
-  opportunity: any;
-  contact?: any;
+  opportunity: Opportunity;
+  contact?: Contact;
   isSelected: boolean;
   onClick: () => void;
 }) {
@@ -232,10 +233,10 @@ function OpportunityCard({
 }
 
 function NewOpportunityModal({ onClose }: { onClose: () => void }) {
-  const { addOpportunity, contacts } = useStore();
+  const { addOpportunity, contacts } = useCreatorOSStore();
   const [formData, setFormData] = useState({
     name: '',
-    type: 'film_pitch' as const,
+    type: 'film_pitch' as OpportunityType,
     contact_id: '',
     estimated_value: '',
     probability: 50,
@@ -283,7 +284,7 @@ function NewOpportunityModal({ onClose }: { onClose: () => void }) {
             <label className="block text-sm text-[#A0A0B0] mb-1">Type</label>
             <select
               value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
+              onChange={(e) => setFormData({ ...formData, type: e.target.value as OpportunityType })}
               className="w-full bg-[#1A1A25] border border-[#2A2A3A] rounded-lg px-4 py-2 text-[#F0F0F5] focus:outline-none focus:border-indigo-500"
             >
               {opportunityTypes.map((type) => (
@@ -299,7 +300,7 @@ function NewOpportunityModal({ onClose }: { onClose: () => void }) {
               className="w-full bg-[#1A1A25] border border-[#2A2A3A] rounded-lg px-4 py-2 text-[#F0F0F5] focus:outline-none focus:border-indigo-500"
             >
               <option value="">Select contact</option>
-              {contacts.map((contact) => (
+              {contacts.map((contact: Contact) => (
                 <option key={contact.id} value={contact.id}>{contact.name}</option>
               ))}
             </select>

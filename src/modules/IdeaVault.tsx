@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useStore } from '@/store';
+import { useCreatorOSStore } from '@/store';
+import type { Idea, IdeaMaturity, IdeaType } from '@/types';
 import { 
   Lightbulb, 
   Search, 
@@ -32,16 +33,16 @@ const maturityLevels = [
 ];
 
 export function IdeaVault() {
-  const { ideas, setQuickCaptureOpen, setCurrentModule } = useStore();
+  const { ideas, setQuickCaptureOpen, setCurrentDomain } = useCreatorOSStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState('all');
   const [selectedMaturity, setSelectedMaturity] = useState('all');
   const [selectedIdea, setSelectedIdea] = useState<string | null>(null);
   const [isExpanding, setIsExpanding] = useState(false);
 
-  const filteredIdeas = ideas.filter(idea => {
+  const filteredIdeas = ideas.filter((idea: Idea) => {
     const matchesSearch = idea.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         idea.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+                         idea.tags.some((tag: string) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesType = selectedType === 'all' || idea.type === selectedType;
     const matchesMaturity = selectedMaturity === 'all' || idea.maturity === selectedMaturity;
     return matchesSearch && matchesType && matchesMaturity;
@@ -54,9 +55,9 @@ export function IdeaVault() {
     setIsExpanding(false);
   };
 
-  const handleConvertToProject = (_idea: any) => {
+  const handleConvertToProject = (_idea: Idea) => {
     // Would create a project from the idea
-    setCurrentModule('film-lab');
+    setCurrentDomain('cinema');
   };
 
   return (
@@ -79,9 +80,9 @@ export function IdeaVault() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatBox label="Total Ideas" value={ideas.length} />
-        <StatBox label="Raw" value={ideas.filter(i => i.maturity === 'raw').length} color="amber" />
-        <StatBox label="Developing" value={ideas.filter(i => i.maturity === 'developing').length} color="blue" />
-        <StatBox label="Mature" value={ideas.filter(i => i.maturity === 'mature').length} color="green" />
+        <StatBox label="Raw" value={ideas.filter((i: Idea) => i.maturity === 'raw').length} color="amber" />
+        <StatBox label="Developing" value={ideas.filter((i: Idea) => i.maturity === 'developing').length} color="blue" />
+        <StatBox label="Mature" value={ideas.filter((i: Idea) => i.maturity === 'mature').length} color="green" />
       </div>
 
       {/* Filters */}
@@ -178,24 +179,24 @@ function IdeaCard({
   onConvert,
   isExpanding 
 }: { 
-  idea: any;
+  idea: Idea;
   isSelected: boolean;
   onSelect: () => void;
   onExpand: () => void;
   onConvert: () => void;
   isExpanding: boolean;
 }) {
-  const { updateIdea, deleteIdea } = useStore();
+  const { updateIdea, deleteIdea } = useCreatorOSStore();
   const [showActions, setShowActions] = useState(false);
 
-  const maturityColors = {
+  const maturityColors: Record<IdeaMaturity, string> = {
     raw: 'text-amber-400 bg-amber-400/10',
     developing: 'text-blue-400 bg-blue-400/10',
     mature: 'text-green-400 bg-green-400/10',
     archived: 'text-[#606070] bg-[#606070]/10',
   };
 
-  const typeLabels: Record<string, string> = {
+  const typeLabels: Record<IdeaType, string> = {
     film_idea: 'Film Idea',
     campaign_idea: 'Campaign Idea',
     business_idea: 'Business Idea',
@@ -222,10 +223,10 @@ function IdeaCard({
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
-          <span className={cn('text-xs px-2 py-1 rounded-full', maturityColors[idea.maturity as keyof typeof maturityColors])}>
+          <span className={cn('text-xs px-2 py-1 rounded-full', maturityColors[idea.maturity])}>
             {idea.maturity}
           </span>
-          <span className="text-xs text-[#606070]">{typeLabels[idea.type] || idea.type}</span>
+          <span className="text-xs text-[#606070]">{typeLabels[idea.type]}</span>
         </div>
         <div className="relative">
           <button 

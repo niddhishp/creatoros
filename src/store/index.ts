@@ -4,7 +4,7 @@ import type {
   Domain, Studio, Project, Task, 
   Float, Character, Agent,
   SystemRecommendation, AppNotification, ResumeItem,
-  DomainSlug
+  DomainSlug, Idea, InboxItem, Opportunity, Contact, FinanceEntry
 } from '@/types';
 
 // ============================================
@@ -383,6 +383,37 @@ const mockResumeItems: ResumeItem[] = [
   },
 ];
 
+const mockFinanceEntries: FinanceEntry[] = [
+  { id: 'fe1', user_id: '1', entry_type: 'income', amount: 350000, currency: 'INR', category: 'Film Direction', description: 'Ad film direction fee — FMCG brand', entry_date: '2025-03-01', created_at: new Date().toISOString() },
+  { id: 'fe2', user_id: '1', entry_type: 'income', amount: 120000, currency: 'INR', category: 'Consulting', description: 'AI consulting retainer', entry_date: '2025-03-05', created_at: new Date().toISOString() },
+  { id: 'fe3', user_id: '1', entry_type: 'expense', amount: 45000, currency: 'INR', category: 'Software', description: 'AI tools and subscriptions', entry_date: '2025-03-01', created_at: new Date().toISOString() },
+  { id: 'fe4', user_id: '1', entry_type: 'expense', amount: 28000, currency: 'INR', category: 'Equipment', description: 'Studio equipment rental', entry_date: '2025-03-10', created_at: new Date().toISOString() },
+];
+
+const mockIdeas: Idea[] = [
+  { id: 'idea1', user_id: '1', content: 'A psychological thriller set in a remote AI research facility where scientists begin questioning whether their thoughts are their own.', type: 'film_idea', maturity: 'developing', tags: ['thriller', 'AI', 'psychology'], created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: 'idea2', user_id: '1', content: 'Campaign idea: Brand that sells silence in a world of noise — luxury headphones positioned as "the last quiet place".', type: 'campaign_idea', maturity: 'raw', tags: ['advertising', 'luxury', 'audio'], created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: 'idea3', user_id: '1', content: 'A marketplace where human experts are paired with AI drafts — PlusHuman. The AI does the grunt work, humans add the soul.', type: 'business_idea', maturity: 'mature', tags: ['startup', 'AI', 'marketplace'], created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+];
+
+const mockInboxItems: InboxItem[] = [
+  { id: 'inbox1', user_id: '1', from_email: 'priya.sharma@studio.com', to_email: 'niddhish@lightseeker.com', subject: 'Re: Collaboration on AI Film Project', body: 'Hi Niddhish, loved your reel. Would love to discuss a potential collaboration on our upcoming production. Are you free next week?', is_read: false, requires_response: true, extracted_opportunities: ['film collaboration'], created_at: new Date(Date.now() - 86400000).toISOString() },
+  { id: 'inbox2', user_id: '1', from_email: 'arjun@brandagency.in', to_email: 'niddhish@lightseeker.com', subject: 'Campaign Brief — New FMCG Launch', body: 'We have a new campaign brief for a major FMCG brand. Looking for a director with your aesthetic. Budget is significant. Can we set up a call?', is_read: false, requires_response: true, extracted_opportunities: ['advertising campaign'], created_at: new Date(Date.now() - 172800000).toISOString() },
+  { id: 'inbox3', user_id: '1', from_email: 'meera@creatorconf.com', to_email: 'niddhish@lightseeker.com', subject: 'Speaking Invitation — Creator Summit 2025', body: 'We would be thrilled to have you speak at Creator Summit 2025 about AI-powered filmmaking. Honorarium and travel covered.', is_read: true, requires_response: false, created_at: new Date(Date.now() - 259200000).toISOString() },
+];
+
+const mockContacts: Contact[] = [
+  { id: 'contact1', user_id: '1', name: 'Priya Sharma', email: 'priya.sharma@studio.com', organization: 'Phantom Studios', role: 'Creative Producer', created_at: new Date().toISOString() },
+  { id: 'contact2', user_id: '1', name: 'Arjun Kapoor', email: 'arjun@brandagency.in', organization: 'Leo Burnett India', role: 'Head of Production', created_at: new Date().toISOString() },
+  { id: 'contact3', user_id: '1', name: 'Meera Nair', email: 'meera@creatorconf.com', organization: 'Creator Summit', role: 'Event Director', created_at: new Date().toISOString() },
+];
+
+const mockOpportunities: Opportunity[] = [
+  { id: 'opp1', user_id: '1', contact_id: 'contact1', name: 'Phantom Studios Film Collaboration', type: 'film_pitch', description: 'AI-powered feature film development partnership', estimated_value: 5000000, probability: 65, status: 'qualified', next_action: 'Send treatment document', next_action_date: new Date(Date.now() + 172800000).toISOString(), created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: 'opp2', user_id: '1', contact_id: 'contact2', name: 'Leo Burnett FMCG Campaign', type: 'campaign_pitch', description: 'Director role for new product launch campaign', estimated_value: 2500000, probability: 45, status: 'lead', next_action: 'Schedule discovery call', next_action_date: new Date(Date.now() + 86400000).toISOString(), created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: 'opp3', user_id: '1', contact_id: 'contact3', name: 'Creator Summit Speaking Slot', type: 'speaking', description: 'Keynote on AI filmmaking', estimated_value: 150000, probability: 80, status: 'pitching', next_action: 'Confirm topic and dates', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+];
+
 // ============================================
 // STORE INTERFACE
 // ============================================
@@ -402,6 +433,11 @@ interface CreatorOSState {
   recommendations: SystemRecommendation[];
   notifications: AppNotification[];
   resumeItems: ResumeItem[];
+  ideas: Idea[];
+  inboxItems: InboxItem[];
+  opportunities: Opportunity[];
+  contacts: Contact[];
+  financeEntries: FinanceEntry[];
   
   // UI State
   currentDomain: DomainSlug | null;
@@ -441,7 +477,20 @@ interface CreatorOSState {
   addCharacter: (character: Omit<Character, 'id' | 'created_at' | 'updated_at'>) => void;
   updateCharacter: (id: string, updates: Partial<Character>) => void;
   deleteCharacter: (id: string) => void;
-  
+
+  // Idea Actions
+  addIdea: (idea: Omit<Idea, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => void;
+  updateIdea: (id: string, updates: Partial<Idea>) => void;
+  deleteIdea: (id: string) => void;
+
+  // Opportunity Actions
+  addOpportunity: (opportunity: Opportunity) => void;
+  updateOpportunity: (id: string, updates: Partial<Opportunity>) => void;
+  deleteOpportunity: (id: string) => void;
+
+  // Finance Actions
+  addFinanceEntry: (entry: Omit<FinanceEntry, 'id'>) => void;
+
   // Notification Actions
   markNotificationRead: (id: string) => void;
   dismissAllNotifications: () => void;
@@ -483,6 +532,11 @@ export const useCreatorOSStore = create<CreatorOSState>()(
       recommendations: mockRecommendations,
       notifications: mockNotifications,
       resumeItems: mockResumeItems,
+      ideas: mockIdeas,
+      inboxItems: mockInboxItems,
+      opportunities: mockOpportunities,
+      contacts: mockContacts,
+      financeEntries: mockFinanceEntries,
       
       currentDomain: null,
       currentStudio: null,
@@ -589,7 +643,51 @@ export const useCreatorOSStore = create<CreatorOSState>()(
       deleteCharacter: (id) => set((state) => ({
         characters: state.characters.filter((c) => c.id !== id),
       })),
-      
+
+      // Idea Actions
+      addIdea: (idea) => set((state) => ({
+        ideas: [...state.ideas, {
+          ...idea,
+          id: `idea${Date.now()}`,
+          user_id: '1',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as Idea],
+      })),
+
+      updateIdea: (id, updates) => set((state) => ({
+        ideas: state.ideas.map((i) =>
+          i.id === id ? { ...i, ...updates, updated_at: new Date().toISOString() } : i
+        ),
+      })),
+
+      deleteIdea: (id) => set((state) => ({
+        ideas: state.ideas.filter((i) => i.id !== id),
+      })),
+
+      // Opportunity Actions
+      addOpportunity: (opportunity) => set((state) => ({
+        opportunities: [...state.opportunities, opportunity],
+      })),
+
+      updateOpportunity: (id, updates) => set((state) => ({
+        opportunities: state.opportunities.map((o) =>
+          o.id === id ? { ...o, ...updates, updated_at: new Date().toISOString() } : o
+        ),
+      })),
+
+      deleteOpportunity: (id) => set((state) => ({
+        opportunities: state.opportunities.filter((o) => o.id !== id),
+      })),
+
+      addFinanceEntry: (entry) => set((state) => ({
+        financeEntries: [...state.financeEntries, {
+          ...entry,
+          id: `fe${Date.now()}`,
+          created_at: new Date().toISOString(),
+        } as FinanceEntry],
+      })),
+
       // Notification Actions
       markNotificationRead: (id) => set((state) => ({
         notifications: state.notifications.map((n) => 

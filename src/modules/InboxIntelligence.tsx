@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useStore } from '@/store';
+import { useCreatorOSStore } from '@/store';
+import type { InboxItem } from '@/types';
 import { 
   Mail, 
   Search, 
@@ -21,14 +22,14 @@ const categories = [
 ];
 
 export function InboxIntelligence() {
-  const { inboxItems } = useStore();
+  const { inboxItems } = useCreatorOSStore();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedEmail, setSelectedEmail] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isGeneratingReply, setIsGeneratingReply] = useState(false);
   const [generatedReply, setGeneratedReply] = useState('');
 
-  const filteredItems = inboxItems.filter(item => {
+  const filteredItems = inboxItems.filter((item: InboxItem) => {
     const matchesSearch = item.subject?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          item.body?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || 
@@ -37,7 +38,7 @@ export function InboxIntelligence() {
     return matchesSearch && matchesCategory;
   });
 
-  const selectedItem = inboxItems.find(i => i.id === selectedEmail);
+  const selectedItem = inboxItems.find((i: InboxItem) => i.id === selectedEmail);
 
   const handleGenerateReply = async () => {
     setIsGeneratingReply(true);
@@ -226,7 +227,7 @@ export function InboxIntelligence() {
   );
 }
 
-function EmailListItem({ item, isSelected, onClick }: { item: any; isSelected: boolean; onClick: () => void }) {
+function EmailListItem({ item, isSelected, onClick }: { item: InboxItem; isSelected: boolean; onClick: () => void }) {
   return (
     <button
       onClick={onClick}

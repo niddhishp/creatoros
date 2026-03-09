@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useStore } from '@/store';
+import { useCreatorOSStore } from '@/store';
+import type { Project } from '@/types';
 import { 
   Presentation, 
   Plus, 
@@ -30,7 +31,8 @@ const deckTones = [
 ];
 
 export function DeckMachine() {
-  const { decks } = useStore();
+  const { projects } = useCreatorOSStore();
+  const decks = projects.filter((p: Project) => p.project_type === 'deck' || p.project_type === 'pitch');
   const [selectedDeck, setSelectedDeck] = useState<string | null>(null);
   const [showNewDeckModal, setShowNewDeckModal] = useState(false);
 
@@ -108,8 +110,8 @@ export function DeckMachine() {
   );
 }
 
-function DeckCard({ deck, isSelected, onSelect }: { deck: any; isSelected: boolean; onSelect: () => void }) {
-  const typeInfo = deckTypes.find(t => t.value === deck.type) || deckTypes[0];
+function DeckCard({ deck, isSelected, onSelect }: { deck: Project; isSelected: boolean; onSelect: () => void }) {
+  const typeInfo = deckTypes.find(t => t.value === deck.project_type) || deckTypes[0];
   const Icon = typeInfo.icon;
 
   return (
@@ -125,18 +127,18 @@ function DeckCard({ deck, isSelected, onSelect }: { deck: any; isSelected: boole
           <Icon className="w-6 h-6 text-indigo-400" />
         </div>
         <span className="text-xs px-2 py-1 bg-[#1A1A25] text-[#606070] rounded">
-          v{deck.version}
+          v1
         </span>
       </div>
 
-      <h3 className="text-lg font-semibold text-[#F0F0F5] mb-1">{deck.name}</h3>
+      <h3 className="text-lg font-semibold text-[#F0F0F5] mb-1">{deck.title}</h3>
       <p className="text-sm text-[#606070] mb-4">{typeInfo.label}</p>
 
-      {deck.tone && (
+      {deck.stage && (
         <div className="flex items-center gap-2 mb-4">
-          <span className="text-xs text-[#606070]">Tone:</span>
+          <span className="text-xs text-[#606070]">Stage:</span>
           <span className="text-xs px-2 py-1 bg-[#1A1A25] text-indigo-400 rounded">
-            {deck.tone}
+            {deck.stage}
           </span>
         </div>
       )}
@@ -172,7 +174,7 @@ function AIActionButton({ icon: Icon, label, description }: { icon: React.Elemen
 }
 
 function NewDeckModal({ onClose }: { onClose: () => void }) {
-  const { addDeck, addProject } = useStore();
+  const { addProject } = useCreatorOSStore();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     name: '',
@@ -181,32 +183,16 @@ function NewDeckModal({ onClose }: { onClose: () => void }) {
   });
 
   const handleSubmit = () => {
-    const projectId = Math.random().toString(36).substr(2, 9);
-    
     addProject({
-      id: projectId,
-      user_id: '1',
-      name: formData.name,
+      domain_id: '1',
+      title: formData.name,
       description: `${formData.type} deck`,
-      type: 'other',
+      project_type: 'deck',
       status: 'active',
-      metadata: {},
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      priority: 'medium',
+      visibility: 'private',
+      last_activity_at: new Date().toISOString(),
     });
-
-    addDeck({
-      id: Math.random().toString(36).substr(2, 9),
-      project_id: projectId,
-      user_id: '1',
-      name: formData.name,
-      type: formData.type,
-      tone: formData.tone,
-      version: 1,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    });
-
     onClose();
   };
 

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useStore } from '@/store';
+import { useCreatorOSStore } from '@/store';
+import type { FinanceEntry } from '@/types';
 import { 
   Wallet, 
   Plus, 
@@ -37,21 +38,21 @@ const incomeCategories = [
 ];
 
 export function FinanceHub() {
-  const { financeEntries, dashboardStats, addFinanceEntry } = useStore();
+  const { financeEntries, addFinanceEntry } = useCreatorOSStore();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showNewModal, setShowNewModal] = useState(false);
 
-  const filteredEntries = financeEntries.filter(entry => {
-    return selectedCategory === 'all' || entry.type === selectedCategory;
+  const filteredEntries = financeEntries.filter((entry: FinanceEntry) => {
+    return selectedCategory === 'all' || entry.entry_type === selectedCategory;
   });
 
   const totalIncome = financeEntries
-    .filter(e => e.type === 'income')
-    .reduce((sum, e) => sum + e.amount, 0);
+    .filter((e: FinanceEntry) => e.entry_type === 'income')
+    .reduce((sum: number, e: FinanceEntry) => sum + e.amount, 0);
 
   const totalExpenses = financeEntries
-    .filter(e => e.type === 'expense')
-    .reduce((sum, e) => sum + e.amount, 0);
+    .filter((e: FinanceEntry) => e.entry_type === 'expense')
+    .reduce((sum: number, e: FinanceEntry) => sum + e.amount, 0);
 
   const netIncome = totalIncome - totalExpenses;
 
@@ -97,8 +98,8 @@ export function FinanceHub() {
         />
         <StatBox 
           label="Monthly Burn" 
-          value={`₹${((dashboardStats?.monthly_burn || 420000) / 100000).toFixed(1)}L`} 
-          trend={`${dashboardStats?.runway_months || 8} months runway`}
+          value={`₹${(420000 / 100000).toFixed(1)}L`} 
+          trend="8 months runway"
           trendUp={true}
           icon={Calendar}
         />
@@ -272,15 +273,15 @@ function StatBox({
   );
 }
 
-function TransactionItem({ entry }: { entry: any }) {
+function TransactionItem({ entry }: { entry: FinanceEntry }) {
   return (
     <div className="flex items-center justify-between p-3 bg-[#1A1A25] rounded-lg">
       <div className="flex items-center gap-3">
         <div className={cn(
           'w-8 h-8 rounded-lg flex items-center justify-center',
-          entry.type === 'income' ? 'bg-green-500/10' : 'bg-red-500/10'
+          entry.entry_type === 'income' ? 'bg-green-500/10' : 'bg-red-500/10'
         )}>
-          {entry.type === 'income' ? (
+          {entry.entry_type === 'income' ? (
             <ArrowUpRight className="w-4 h-4 text-green-400" />
           ) : (
             <ArrowDownRight className="w-4 h-4 text-red-400" />
@@ -288,14 +289,14 @@ function TransactionItem({ entry }: { entry: any }) {
         </div>
         <div>
           <p className="text-sm text-[#F0F0F5]">{entry.description || entry.category}</p>
-          <p className="text-xs text-[#606070]">{new Date(entry.date).toLocaleDateString()}</p>
+          <p className="text-xs text-[#606070]">{new Date(entry.entry_date).toLocaleDateString()}</p>
         </div>
       </div>
       <span className={cn(
         'text-sm font-medium',
-        entry.type === 'income' ? 'text-green-400' : 'text-red-400'
+        entry.entry_type === 'income' ? 'text-green-400' : 'text-red-400'
       )}>
-        {entry.type === 'income' ? '+' : '-'}₹{entry.amount.toLocaleString()}
+        {entry.entry_type === 'income' ? '+' : '-'}₹{entry.amount.toLocaleString()}
       </span>
     </div>
   );
@@ -343,30 +344,25 @@ function SubscriptionItem({ name, amount }: { name: string; amount: number }) {
   );
 }
 
-function NewEntryModal({ onClose, addFinanceEntry }: { onClose: () => void; addFinanceEntry: (entry: any) => void }) {
+function NewEntryModal({ onClose, addFinanceEntry }: { onClose: () => void; addFinanceEntry: (entry: Omit<FinanceEntry, 'id'>) => void }) {
   const [formData, setFormData] = useState({
     type: 'expense' as 'income' | 'expense',
     category: '',
     amount: '',
     description: '',
     date: new Date().toISOString().split('T')[0],
-    is_personal: false,
   });
 
   const handleSubmit = () => {
     addFinanceEntry({
-      id: Math.random().toString(36).substr(2, 9),
       user_id: '1',
-      type: formData.type,
+      entry_type: formData.type,
       category: formData.category,
       amount: parseFloat(formData.amount) || 0,
       currency: 'INR',
-      date: formData.date,
+      entry_date: formData.date,
       description: formData.description,
-      is_personal: formData.is_personal,
-      is_recurring: false,
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
     });
     onClose();
   };

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useStore } from '@/store';
+import { useCreatorOSStore } from '@/store';
+import type { Project } from '@/types';
 import { 
   Megaphone, 
   Plus, 
@@ -12,11 +13,12 @@ import {
 import { cn } from '@/lib/utils';
 
 export function CampaignLab() {
-  const { campaigns } = useStore();
+  const { projects } = useCreatorOSStore();
+  const campaigns = projects.filter((p: Project) => p.project_type === 'campaign');
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
   const [showNewCampaignModal, setShowNewCampaignModal] = useState(false);
 
-  const activeCampaigns = campaigns.filter(c => c.status !== 'archived');
+  const activeCampaigns = campaigns.filter((c: Project) => c.status !== 'archived');
 
   return (
     <div className="space-y-6">
@@ -105,7 +107,7 @@ function StudioTab({ icon: Icon, label, active = false }: { icon: React.ElementT
   );
 }
 
-function CampaignCard({ campaign, isSelected, onSelect }: { campaign: any; isSelected: boolean; onSelect: () => void }) {
+function CampaignCard({ campaign, isSelected, onSelect }: { campaign: Project; isSelected: boolean; onSelect: () => void }) {
   const statusColors: Record<string, string> = {
     briefing: 'text-amber-400 bg-amber-400/10',
     strategy: 'text-blue-400 bg-blue-400/10',
@@ -125,9 +127,9 @@ function CampaignCard({ campaign, isSelected, onSelect }: { campaign: any; isSel
     >
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h3 className="text-lg font-semibold text-[#F0F0F5]">{campaign.brand_name}</h3>
-          {campaign.campaign_name && (
-            <p className="text-sm text-[#606070]">{campaign.campaign_name}</p>
+          <h3 className="text-lg font-semibold text-[#F0F0F5]">{campaign.title}</h3>
+          {campaign.stage && (
+            <p className="text-sm text-[#606070]">{campaign.stage}</p>
           )}
         </div>
         <span className={cn('text-xs px-2 py-1 rounded-full', statusColors[campaign.status])}>
@@ -135,25 +137,8 @@ function CampaignCard({ campaign, isSelected, onSelect }: { campaign: any; isSel
         </span>
       </div>
 
-      {campaign.business_problem && (
-        <p className="text-sm text-[#A0A0B0] mb-4 line-clamp-2">{campaign.business_problem}</p>
-      )}
-
-      {campaign.scores && (
-        <div className="grid grid-cols-3 gap-2 mb-4">
-          <div className="text-center p-2 bg-[#1A1A25] rounded">
-            <p className="text-xs text-[#606070]">Distinctive</p>
-            <p className="text-lg font-bold text-indigo-400">{campaign.scores.distinctiveness}</p>
-          </div>
-          <div className="text-center p-2 bg-[#1A1A25] rounded">
-            <p className="text-xs text-[#606070]">Fame</p>
-            <p className="text-lg font-bold text-green-400">{campaign.scores.fame_potential}</p>
-          </div>
-          <div className="text-center p-2 bg-[#1A1A25] rounded">
-            <p className="text-xs text-[#606070]">Overall</p>
-            <p className="text-lg font-bold text-amber-400">{campaign.scores.overall}</p>
-          </div>
-        </div>
+      {campaign.description && (
+        <p className="text-sm text-[#A0A0B0] mb-4 line-clamp-2">{campaign.description}</p>
       )}
 
       {isSelected && (
@@ -187,7 +172,7 @@ function AIActionButton({ icon: Icon, label, description }: { icon: React.Elemen
 }
 
 function NewCampaignModal({ onClose }: { onClose: () => void }) {
-  const { addCampaign, addProject } = useStore();
+  const { addProject } = useCreatorOSStore();
   const [formData, setFormData] = useState({
     brand_name: '',
     campaign_name: '',
@@ -198,36 +183,16 @@ function NewCampaignModal({ onClose }: { onClose: () => void }) {
   });
 
   const handleSubmit = () => {
-    const projectId = Math.random().toString(36).substr(2, 9);
-    
     addProject({
-      id: projectId,
-      user_id: '1',
-      name: `${formData.brand_name} Campaign`,
+      domain_id: '2',
+      title: `${formData.brand_name} — ${formData.campaign_name || 'Campaign'}`,
       description: formData.campaign_objective,
-      type: 'campaign',
+      project_type: 'campaign',
       status: 'active',
-      metadata: {},
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      priority: 'medium',
+      visibility: 'private',
+      last_activity_at: new Date().toISOString(),
     });
-
-    addCampaign({
-      id: Math.random().toString(36).substr(2, 9),
-      project_id: projectId,
-      brand_name: formData.brand_name,
-      campaign_name: formData.campaign_name,
-      category: formData.category,
-      business_problem: formData.business_problem,
-      campaign_objective: formData.campaign_objective,
-      key_message: formData.key_message,
-      competitor_references: [],
-      distribution_channels: [],
-      status: 'briefing',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    });
-
     onClose();
   };
 

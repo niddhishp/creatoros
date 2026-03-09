@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useStore } from '@/store';
+import { useCreatorOSStore } from '@/store';
+import type { Project } from '@/types';
 import { 
   Film, 
   Plus, 
@@ -13,7 +14,8 @@ import {
 import { cn } from '@/lib/utils';
 
 export function FilmLab() {
-  const { films } = useStore();
+  const { projects } = useCreatorOSStore();
+  const films = projects.filter((p: Project) => p.domain_id === '1');
   const [selectedFilm, setSelectedFilm] = useState<string | null>(null);
   const [showNewFilmModal, setShowNewFilmModal] = useState(false);
 
@@ -125,7 +127,7 @@ function FilmProjectCard({
   isSelected, 
   onSelect 
 }: { 
-  film: any; 
+  film: Project; 
   isSelected: boolean;
   onSelect: () => void;
 }) {
@@ -138,6 +140,11 @@ function FilmProjectCard({
     production: 'text-pink-400 bg-pink-400/10',
     post: 'text-cyan-400 bg-cyan-400/10',
     completed: 'text-green-400 bg-green-400/10',
+    idea: 'text-amber-400 bg-amber-400/10',
+    active: 'text-blue-400 bg-blue-400/10',
+    paused: 'text-[#606070] bg-[#606070]/10',
+    stalled: 'text-red-400 bg-red-400/10',
+    archived: 'text-[#606070] bg-[#606070]/10',
   };
 
   return (
@@ -154,42 +161,28 @@ function FilmProjectCard({
       <div className="flex items-start justify-between mb-4">
         <div>
           <h3 className="text-lg font-semibold text-[#F0F0F5]">{film.title}</h3>
-          {film.working_title && (
-            <p className="text-sm text-[#606070]">Working title: {film.working_title}</p>
+          {film.description && (
+            <p className="text-sm text-[#606070] line-clamp-1">{film.description}</p>
           )}
         </div>
-        <span className={cn('text-xs px-2 py-1 rounded-full', statusColors[film.status])}>
+        <span className={cn('text-xs px-2 py-1 rounded-full', statusColors[film.status] || statusColors.idea)}>
           {film.status.replace('_', ' ')}
         </span>
       </div>
 
-      {/* Logline */}
-      {film.logline && (
-        <p className="text-sm text-[#A0A0B0] mb-4 line-clamp-2">{film.logline}</p>
+      {/* Stage */}
+      {film.stage && (
+        <p className="text-sm text-[#A0A0B0] mb-4 line-clamp-2">{film.stage}</p>
       )}
 
       {/* Meta */}
       <div className="flex flex-wrap gap-2 mb-4">
-        {film.genre.map((g: string) => (
-          <span key={g} className="text-xs px-2 py-1 bg-[#1A1A25] text-[#A0A0B0] rounded">
-            {g}
+        {film.project_type && (
+          <span className="text-xs px-2 py-1 bg-[#1A1A25] text-[#A0A0B0] rounded">
+            {film.project_type}
           </span>
-        ))}
-        <span className="text-xs px-2 py-1 bg-[#1A1A25] text-[#A0A0B0] rounded">
-          {film.format}
-        </span>
+        )}
       </div>
-
-      {/* Themes */}
-      {film.themes && film.themes.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-4">
-          {film.themes.map((theme: string) => (
-            <span key={theme} className="text-xs text-indigo-400">
-              #{theme.toLowerCase().replace(/\s+/g, '_')}
-            </span>
-          ))}
-        </div>
-      )}
 
       {/* Actions */}
       {isSelected && (
@@ -235,7 +228,7 @@ function AIActionButton({
 }
 
 function NewFilmModal({ onClose }: { onClose: () => void }) {
-  const { addFilm, addProject } = useStore();
+  const { addProject } = useCreatorOSStore();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     title: '',
@@ -247,36 +240,16 @@ function NewFilmModal({ onClose }: { onClose: () => void }) {
   });
 
   const handleSubmit = () => {
-    const projectId = Math.random().toString(36).substr(2, 9);
-    
     addProject({
-      id: projectId,
-      user_id: '1',
-      name: formData.title,
-      description: formData.logline,
-      type: 'film',
-      status: 'active',
-      metadata: {},
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    });
-
-    addFilm({
-      id: Math.random().toString(36).substr(2, 9),
-      project_id: projectId,
+      domain_id: '1',
       title: formData.title,
-      working_title: formData.working_title,
-      genre: formData.genre,
-      format: formData.format,
-      logline: formData.logline,
-      premise: formData.premise,
-      themes: [],
-      comparable_films: [],
-      status: 'concept',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      description: formData.logline || formData.premise,
+      project_type: 'film',
+      status: 'active',
+      priority: 'medium',
+      visibility: 'private',
+      last_activity_at: new Date().toISOString(),
     });
-
     onClose();
   };
 

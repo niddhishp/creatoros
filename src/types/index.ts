@@ -648,6 +648,72 @@ export interface PitchDeckSlide {
   visual_notes?: string;
 }
 
+export type IdeaMaturity = 'raw' | 'developing' | 'mature' | 'archived';
+export type IdeaType =
+  | 'film_idea' | 'campaign_idea' | 'business_idea' | 'scene_idea'
+  | 'startup_idea' | 'content_post' | 'dialogue_line' | 'pitch_thought'
+  | 'character_concept' | 'visual_concept' | 'general';
+
+export interface Idea {
+  id: string;
+  user_id: string;
+  content: string;
+  type: IdeaType;
+  maturity: IdeaMaturity;
+  tags: string[];
+  project_id?: string;
+  expanded_content?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface InboxItem {
+  id: string;
+  user_id: string;
+  from_email: string;
+  to_email: string;
+  subject: string;
+  body: string;
+  is_read: boolean;
+  requires_response: boolean;
+  ai_summary?: string;
+  extracted_opportunities?: string[];
+  created_at: string;
+}
+
+export type OpportunityStatus =
+  | 'lead' | 'qualified' | 'pitching' | 'negotiation' | 'closed_won' | 'closed_lost';
+export type OpportunityType =
+  | 'film_pitch' | 'campaign_pitch' | 'speaking' | 'collaboration' | 'investment' | 'consulting';
+
+export interface Opportunity {
+  id: string;
+  user_id: string;
+  contact_id?: string;
+  name: string;
+  type: OpportunityType;
+  description?: string;
+  estimated_value: number;
+  probability: number;
+  status: OpportunityStatus;
+  next_action?: string;
+  next_action_date?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Contact {
+  id: string;
+  user_id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  organization?: string;
+  role?: string;
+  notes?: string;
+  created_at: string;
+}
+
 export interface BoxOfficeEstimate {
   opening_weekend_inr?: string;
   total_domestic_inr?: string;
